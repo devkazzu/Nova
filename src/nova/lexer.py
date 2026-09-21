@@ -94,7 +94,10 @@ class Lexer:
             self.token_line = self.line
             self.token_column = self.column
 
-            yield self.scan_token()
+            token = self.scan_token()
+
+            if token.type != TokenType.EOF:
+                yield token
 
         location = self.location()
 
@@ -106,17 +109,30 @@ class Lexer:
         )
 
     def scan_token(self) -> Token:
-        char = self.advance()
+        # Skip whitespace and comments safely.
+        #
+        # IMPORTANT:
+        # Do not recursively call scan_token() here.
+        # Recursion at EOF was causing IndexError.
+        while True:
+            if self.is_at_end():
+                return Token(
+                    type=TokenType.EOF,
+                    lexeme="",
+                    literal=None,
+                    location=self.location(),
+                )
 
-        if char in " \t\r":
-            return self.scan_token()
+            char = self.advance()
 
-        if char == "\n":
-            return self.scan_token()
+            if char in " \t\r\n":
+                continue
 
-        if char == "#":
-            self.skip_comment()
-            return self.scan_token()
+            if char == "#":
+                self.skip_comment()
+                continue
+
+            break
 
         if char.isalpha() or char == "_":
             return self.identifier()
@@ -267,6 +283,9 @@ class Lexer:
             self.advance()
 
     def advance(self) -> str:
+        if self.is_at_end():
+            return "\0"
+
         char = self.source[self.current]
         self.current += 1
 
