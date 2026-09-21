@@ -1,0 +1,9 @@
+let name = "Nova";
+
+print("Hello " + name);
+
+let x = 10;
+let y = 20;
+
+print("10 + 20 =");
+print(x + y);
