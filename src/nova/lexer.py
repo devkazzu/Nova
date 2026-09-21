@@ -99,21 +99,21 @@ class Lexer:
             if token.type != TokenType.EOF:
                 yield token
 
-        location = self.location()
-
         yield Token(
             type=TokenType.EOF,
             lexeme="",
             literal=None,
-            location=location,
+            location=self.location(),
         )
 
     def scan_token(self) -> Token:
-        # Skip whitespace and comments safely.
-        #
-        # IMPORTANT:
-        # Do not recursively call scan_token() here.
-        # Recursion at EOF was causing IndexError.
+        """
+        Scan the next token.
+
+        Whitespace and comments are skipped without recursion.
+        Token position is reset after every skipped section.
+        """
+
         while True:
             if self.is_at_end():
                 return Token(
@@ -126,10 +126,17 @@ class Lexer:
             char = self.advance()
 
             if char in " \t\r\n":
+                self.start = self.current
+                self.token_line = self.line
+                self.token_column = self.column
                 continue
 
             if char == "#":
                 self.skip_comment()
+
+                self.start = self.current
+                self.token_line = self.line
+                self.token_column = self.column
                 continue
 
             break
