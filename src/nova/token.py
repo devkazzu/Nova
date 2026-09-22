@@ -65,4 +65,19 @@ class Token:
     def __str__(self) -> str:
         if self.literal is None:
             return f"{self.type.name} {self.lexeme!r}"
+
         return f"{self.type.name} {self.lexeme!r} {self.literal!r}"
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, str):
+            return self.lexeme == other
+
+        if isinstance(other, Token):
+            return (
+                self.type == other.type
+                and self.lexeme == other.lexeme
+                and self.literal == other.literal
+                and self.location == other.location
+            )
+
+        return NotImplemented
