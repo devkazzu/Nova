@@ -22,8 +22,8 @@ def build_parser() -> argparse.ArgumentParser:
 
     parser.add_argument(
         "--version",
-        action="version",
-        version=f"Nova {VERSION}",
+        action="store_true",
+        help="Show Nova version.",
     )
 
     parser.add_argument(
@@ -75,6 +75,42 @@ def execute_file(path: Path) -> int:
 
         result = interpreter.interpret(program)
 
+        if result is not None:
+            print(stringify(result))
+
+        return 0
+
+    except LexerError as error:
+        print(error, file=sys.stderr)
+        return 1
+
+    except ParserError as error:
+        print(error, file=sys.stderr)
+        return 1
+
+    except NovaRuntimeError as error:
+        print(error, file=sys.stderr)
+        return 1
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = build_parser()
+
+    args = parser.parse_args(argv)
+
+    if args.version:
+        print(f"Nova {VERSION}")
+        return 0
+
+    if args.file is None:
+        start_repl()
+        return 0
+
+    return execute_file(args.file)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
         if result is not None:
             print(stringify(result))
 
