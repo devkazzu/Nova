@@ -146,3 +146,13 @@ class ReturnStatement(Statement):
 class Program(Node):
     declarations: list[Statement]
     span: SourceSpan
+
+    @property
+    def statements(self) -> list[Statement]:
+        """
+        Backward-compatible alias for declarations.
+
+        Some tests and older Nova code use
+        program.statements.
+        """
+        return self.declarations
