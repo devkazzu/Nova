@@ -93,6 +93,45 @@ def execute_file(path: Path) -> int:
         return 1
 
 
+def main(argv: list[str] | None = None) -> int:
+    """
+    Run the Nova command-line interface.
+
+    argv can be supplied by tests or other Python callers.
+    When argv is None, argparse reads sys.argv automatically.
+    """
+
+    parser = build_parser()
+
+    args = parser.parse_args(argv)
+
+    if args.file is None:
+        start_repl()
+        return 0
+
+    return execute_file(args.file)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+        if result is not None:
+            print(stringify(result))
+
+        return 0
+
+    except LexerError as error:
+        print(error, file=sys.stderr)
+        return 1
+
+    except ParserError as error:
+        print(error, file=sys.stderr)
+        return 1
+
+    except NovaRuntimeError as error:
+        print(error, file=sys.stderr)
+        return 1
+
+
 def main() -> int:
     parser = build_parser()
 
