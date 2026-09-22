@@ -84,11 +84,9 @@ class Lexer:
         self.token_column = 1
 
     def tokenize(self) -> list[Token]:
-        """Tokenize the complete source."""
         return list(self.tokens())
 
     def tokens(self) -> Iterator[Token]:
-        """Yield tokens until EOF."""
         while not self.is_at_end():
             self.start = self.current
             self.token_line = self.line
@@ -107,13 +105,6 @@ class Lexer:
         )
 
     def scan_token(self) -> Token:
-        """
-        Scan the next token.
-
-        Whitespace and comments are skipped without recursion.
-        Token position is reset after every skipped section.
-        """
-
         while True:
             if self.is_at_end():
                 return Token(
@@ -155,13 +146,16 @@ class Lexer:
                 self.SINGLE_CHAR_TOKENS[char]
             )
 
+        # IMPORTANT:
+        # Check two-character operators BEFORE
+        # one-character operators.
+        if char in "=!<>|&":
+            return self.two_character_operator(char)
+
         if char in self.ONE_CHAR_OPERATORS:
             return self.make_token(
                 self.ONE_CHAR_OPERATORS[char]
             )
-
-        if char in "=!<>|&":
-            return self.two_character_operator(char)
 
         raise LexerError(
             f"Unexpected character {char!r}",
@@ -275,7 +269,15 @@ class Lexer:
 
         if token_type is not None:
             self.advance()
+
             return self.make_token(token_type)
+
+        # If it is a valid one-character operator,
+        # return that instead of throwing an error.
+        if first in self.ONE_CHAR_OPERATORS:
+            return self.make_token(
+                self.ONE_CHAR_OPERATORS[first]
+            )
 
         raise LexerError(
             f"Unexpected operator {candidate!r}",
@@ -286,7 +288,10 @@ class Lexer:
         )
 
     def skip_comment(self) -> None:
-        while not self.is_at_end() and self.peek() != "\n":
+        while (
+            not self.is_at_end()
+            and self.peek() != "\n"
+        ):
             self.advance()
 
     def advance(self) -> str:
@@ -335,7 +340,9 @@ class Lexer:
         token_type: TokenType,
         literal=None,
     ) -> Token:
-        lexeme = self.source[self.start:self.current]
+        lexeme = self.source[
+            self.start:self.current
+        ]
 
         return Token(
             type=token_type,
